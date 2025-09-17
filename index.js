@@ -9,7 +9,6 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// API endpoint to handle chat messages
 app.post('/api/chat', async (req, res) => {
     try {
         const { message, history } = req.body;
@@ -22,15 +21,18 @@ app.post('/api/chat', async (req, res) => {
         formData.append('message', message);
         formData.append('bot_id', '10420');
         formData.append('chatbot_identity', 'custom_bot_10420');
-        formData.append('wpaicg_chat_history', JSON.stringify(history)); // History will be sent here
+        formData.append('wpaicg_chat_history', JSON.stringify(history));
         formData.append('wpaicg_chat_client_id', 'vvHZZ88WOV');
 
         const response = await fetch('https://chatgptfree.ai/wp-admin/admin-ajax.php', {
             method: 'POST',
             headers: {
-                // User-Agent to mimic a browser
+                // Mimic a complete browser request
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json, text/javascript, */*; q=0.01',
+                'Referer': 'https://chatgptfree.ai/chat',
+                'Accept-Language': 'en-US,en;q=0.9',
             },
             body: formData
         });
