@@ -28,14 +28,23 @@ app.post('/api/chat', async (req, res) => {
         const response = await fetch('https://chatgptfree.ai/wp-admin/admin-ajax.php', {
             method: 'POST',
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Node.js Vercel Bot)',
+                // User-Agent to mimic a browser
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: formData
         });
 
-        const data = await response.json();
-        res.json(data);
+        // Handle both JSON and non-JSON responses
+        const responseText = await response.text();
+        
+        try {
+            const data = JSON.parse(responseText);
+            res.json(data);
+        } catch (parseError) {
+            console.error('Failed to parse JSON, received:', responseText);
+            res.status(500).json({ status: 'error', msg: 'API returned a non-JSON response.', debug: responseText });
+        }
 
     } catch (error) {
         console.error('API Error:', error);
