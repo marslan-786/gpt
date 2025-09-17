@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 80vh;
+        }
+        .chat-box {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            line-height: 1.5;
+        }
+        .user-message {
+            background-color: #dcf8c6;
+            text-align: right;
+            margin-left: 20%;
+        }
+        .ai-message {
+            background-color: #f1f0f0;
+            text-align: left;
+            margin-right: 20%;
+        }
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+        }
+        .chat-input input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-left: 10px;
+        }
+        .chat-input button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .copy-code {
+            display: none;
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #333;
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div id="chat-box" class="chat-box"></div>
+        <div class="chat-input">
+            <input type="text" id="message-input" placeholder="اپنا پیغام لکھیں...">
+            <button onclick="sendMessage()">بھیجیں</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.18/marked.min.js"></script>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const messageInput = document.getElementById('message-input');
+        const CHAT_HISTORY_KEY = 'chatHistory';
+
+        let chatHistory = JSON.parse(localStorage.getItem(CHAT_HISTORY_KEY)) || [];
+
+        function renderHistory() {
+            chatBox.innerHTML = '';
+            chatHistory.forEach(msg => {
+                displayMessage(msg.role, msg.content);
+            });
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message === '') return;
+
+            // Display user message
+            displayMessage('user', message);
+            chatHistory.push({ role: 'user', content: message });
+            messageInput.value = '';
+
+            // Send to server
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message, history: chatHistory })
+                });
+
+                const data = await response.json();
+                const aiMessage = data.data || 'Something went wrong. Please try again.';
+
+                // Display AI response
+                displayMessage('assistant', aiMessage);
+                chatHistory.push({ role: 'assistant', content: aiMessage });
+
+                // Save to localStorage
+                localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(chatHistory));
+
+            } catch (error) {
+                console.error('Error sending message:', error);
+                displayMessage('assistant', 'Sorry, something went wrong.');
+            }
+        }
+
+        function displayMessage(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}-message`;
+
+            if (role === 'assistant' && content.includes('```')) {
+                // If content has markdown, render it
+                messageDiv.innerHTML = marked.parse(content);
+            } else {
+                messageDiv.textContent = content;
+            }
+
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        window.onload = renderHistory;
+    </script>
+</body>
+  </html>
+  
