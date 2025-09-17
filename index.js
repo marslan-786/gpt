@@ -27,24 +27,20 @@ app.post('/api/chat', async (req, res) => {
         const response = await fetch('https://chatgptfree.ai/wp-admin/admin-ajax.php', {
             method: 'POST',
             headers: {
-                // Mimic a complete browser request
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+                // Using the User-Agent that works with your curl command
+                'User-Agent': 'Mozilla/5.0 (Node.js Vercel Bot)',
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept': 'application/json, text/javascript, */*; q=0.01',
-                'Referer': 'https://chatgptfree.ai/chat',
-                'Accept-Language': 'en-US,en;q=0.9',
             },
             body: formData
         });
 
-        // Handle both JSON and non-JSON responses
         const responseText = await response.text();
         
         try {
             const data = JSON.parse(responseText);
             res.json(data);
         } catch (parseError) {
-            console.error('Failed to parse JSON, received:', responseText);
+            console.error('Failed to parse JSON. API returned:', responseText);
             res.status(500).json({ status: 'error', msg: 'API returned a non-JSON response.', debug: responseText });
         }
 
