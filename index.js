@@ -2,6 +2,7 @@
 const express = require('express');
 const fetch = require('node-fetch');
 const path = require('path');
+const FormData = require('form-data'); // Add this line
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -13,25 +14,26 @@ app.post('/api/chat', async (req, res) => {
     try {
         const { message, history } = req.body;
 
-        const formData = new URLSearchParams();
-        formData.append('_wpnonce', '82fadd3b23');
-        formData.append('post_id', '261');
-        formData.append('url', 'https://chatgptfree.ai/chat');
-        formData.append('action', 'wpaicg_chat_shortcode_message');
-        formData.append('message', message);
-        formData.append('bot_id', '10420');
-        formData.append('chatbot_identity', 'custom_bot_10420');
-        formData.append('wpaicg_chat_history', JSON.stringify(history));
-        formData.append('wpaicg_chat_client_id', 'vvHZZ88WOV');
+        // Use form-data to create the payload like curl does
+        const form = new FormData();
+        form.append('_wpnonce', '82fadd3b23');
+        form.append('post_id', '261');
+        form.append('url', 'https://chatgptfree.ai/chat');
+        form.append('action', 'wpaicg_chat_shortcode_message');
+        form.append('message', message);
+        form.append('bot_id', '10420');
+        form.append('chatbot_identity', 'custom_bot_10420');
+        form.append('wpaicg_chat_history', JSON.stringify(history));
+        form.append('wpaicg_chat_client_id', 'vvHZZ88WOV');
 
         const response = await fetch('https://chatgptfree.ai/wp-admin/admin-ajax.php', {
             method: 'POST',
             headers: {
-                // Using the User-Agent that works with your curl command
+                // Use the User-Agent that works
                 'User-Agent': 'Mozilla/5.0 (Node.js Vercel Bot)',
-                'Content-Type': 'application/x-www-form-urlencoded',
+                // Do not set Content-Type, form-data handles it
             },
-            body: formData
+            body: form
         });
 
         const responseText = await response.text();
@@ -53,3 +55,4 @@ app.post('/api/chat', async (req, res) => {
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });
+                
