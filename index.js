@@ -1,0 +1,48 @@
+// index.js
+const express = require('express');
+const fetch = require('node-fetch');
+const path = require('path');
+
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+
+// API endpoint to handle chat messages
+app.post('/api/chat', async (req, res) => {
+    try {
+        const { message, history } = req.body;
+
+        const formData = new URLSearchParams();
+        formData.append('_wpnonce', '82fadd3b23');
+        formData.append('post_id', '261');
+        formData.append('url', 'https://chatgptfree.ai/chat');
+        formData.append('action', 'wpaicg_chat_shortcode_message');
+        formData.append('message', message);
+        formData.append('bot_id', '10420');
+        formData.append('chatbot_identity', 'custom_bot_10420');
+        formData.append('wpaicg_chat_history', JSON.stringify(history)); // History will be sent here
+        formData.append('wpaicg_chat_client_id', 'vvHZZ88WOV');
+
+        const response = await fetch('https://chatgptfree.ai/wp-admin/admin-ajax.php', {
+            method: 'POST',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Node.js Vercel Bot)',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+        res.json(data);
+
+    } catch (error) {
+        console.error('API Error:', error);
+        res.status(500).json({ status: 'error', msg: 'Something went wrong on the server' });
+    }
+});
+
+app.listen(port, () => {
+    console.log(`Server is running at http://localhost:${port}`);
+});
