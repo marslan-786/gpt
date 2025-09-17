@@ -3,12 +3,18 @@ const messageInput = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
 const clearBtn = document.getElementById("clearBtn");
 
-let chatHistory = []; // یہ locally رکھیں گے اور API میں بھی بھیجیں گے
 const bot_id = "10420";
 const chatbot_identity = "custom_bot_10420";
 const post_id = "261";
 const client_id = "vvHZZ88WOV";
 const nonce = "82fadd3b23";
+
+// Load chat history from localStorage
+let chatHistory = JSON.parse(localStorage.getItem("chatHistory")) || [];
+
+function saveHistory() {
+  localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+}
 
 function renderChat() {
   chatDiv.innerHTML = "";
@@ -23,6 +29,7 @@ function renderChat() {
 
 async function sendMessage(message) {
   chatHistory.push({ sender: "user", text: message });
+  saveHistory();
   renderChat();
 
   const formData = new FormData();
@@ -42,11 +49,15 @@ async function sendMessage(message) {
       body: formData
     });
     const data = await res.json();
-    chatHistory.push({ sender: "bot", text: data.response || "No response" });
+
+    // Use data.data for bot response
+    chatHistory.push({ sender: "bot", text: data.data || "No response" });
+    saveHistory();
     renderChat();
   } catch (err) {
     console.error(err);
     chatHistory.push({ sender: "bot", text: "Error contacting API" });
+    saveHistory();
     renderChat();
   }
 }
@@ -63,13 +74,14 @@ clearBtn.addEventListener("click", async () => {
   if (!confirm("Are you sure you want to delete chat history?")) return;
 
   chatHistory = [];
+  saveHistory();
   renderChat();
 
   // Optionally, notify API about clearing
   const formData = new FormData();
   formData.append("_wpnonce", nonce);
   formData.append("post_id", post_id);
-  formData.append("action", "wpaicg_clear_chat_history"); // فرضی API action، آپ کو API دیکھ کر change کرنا ہوگا
+  formData.append("action", "wpaicg_clear_chat_history"); // فرضی API action، اگر موجود ہو
   formData.append("wpaicg_chat_client_id", client_id);
 
   try {
@@ -81,3 +93,6 @@ clearBtn.addEventListener("click", async () => {
     console.error("Failed to clear chat history on API:", err);
   }
 });
+
+// Render on page load
+renderChat();
