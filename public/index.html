@@ -123,6 +123,10 @@
                 });
 
                 const data = await response.json();
+                
+                // Log the entire data object to the console for debugging
+                console.log('API Response:', data);
+
                 const aiMessage = data.data || 'Something went wrong. Please try again.';
 
                 // Display AI response
@@ -156,5 +160,4 @@
         window.onload = renderHistory;
     </script>
 </body>
-  </html>
-  
+</html>
